@@ -13,6 +13,11 @@
         src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
     <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000"
         data-border-radius="small"></script>
+    <style>
+        .emoji {
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 font-[&#39;Inter&#39;]">
@@ -257,11 +262,12 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">College</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registration Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Feedback</th>
                             </tr>
                         </thead>
                         <tbody id="registrationsTable">
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center">Loading registrations...</td>
+                                <td colspan="6" class="px-6 py-4 text-center">Loading registrations...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -270,7 +276,7 @@
         `;
         document.body.appendChild(modal);
 
-        // Fetch registrations for this event
+        // Fetch registrations
         fetch(`/api/events/${eventId}/registrations`)
             .then(response => response.json())
             .then(registrations => {
@@ -278,7 +284,7 @@
                 if (registrations.length === 0) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="5" class="px-6 py-4 text-center">No registrations yet</td>
+                            <td colspan="6" class="px-6 py-4 text-center">No registrations yet</td>
                         </tr>
                     `;
                     return;
@@ -291,9 +297,17 @@
                         <td class="px-6 py-4">${reg.phone}</td>
                         <td class="px-6 py-4">${reg.college}</td>
                         <td class="px-6 py-4">${new Date(reg.registrationDate).toLocaleDateString()}</td>
+                        <td class="px-6 py-4">${reg.feedback === 'happy' ? '😊' : reg.feedback === 'neutral' ? '😐' : reg.feedback === 'angry' ? '😡' : 'N/A'}</td>
                     </tr>
                 `).join('');
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-red-500">Error loading registrations</td>
+                    </tr>
+                `;
+            });
     }
     </script>

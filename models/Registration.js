@@ -30,7 +30,7 @@ const registrationSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'approved', 'rejected'],
         default: 'pending'
-    }
+    },
+    feedback: { type: String, enum: ['happy', 'neutral', 'angry'], default: null }
 });
-
 module.exports = mongoose.model('Registration', registrationSchema); 

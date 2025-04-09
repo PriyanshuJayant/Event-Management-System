@@ -254,7 +254,7 @@ app.post('/api/events/register', async (req, res) => {
         res.status(200).json({ message: 'Registration successful' });
     } catch (error) {
         res.status(500).send('Error processing registration');
-    }
+    } 
 });
 
 // Cancel registration (for participants)
@@ -304,6 +304,50 @@ app.get('/api/events/:eventId/registrations', async (req, res) => {
 
 app.get('/eventRegistration.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'eventRegistration.html'));
+});
+
+// Route to get similar participants
+app.get('/api/events/:eventId/similar-participants', async (req, res) => {
+    try {
+        const { eventId } = req.params;
+        const { college } = req.query;
+
+        // Find participants from the same college
+        const similarParticipants = await Registration.find({ 
+            eventId,
+            college 
+        }).select('participantName email phone');
+
+        // Return empty array if no participants are found
+        res.json(similarParticipants || []);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching similar participants' });
+    }
+});
+
+// Route to save user feedback
+app.post('/api/registrations/:registrationId/feedback', async (req, res) => {
+    try {
+        const { registrationId } = req.params;
+        const { feedback } = req.body;
+
+        const registration = await Registration.findByIdAndUpdate(
+            registrationId,
+            { feedback },
+            { new: true }
+        );
+
+        if (!registration) {
+            return res.status(404).json({ error: 'Registration not found' });
+        }
+
+        console.log("Registration ID:", registrationId);
+        console.log("Received feedback:", feedback);
+        console.log("Updated registration:", registration);
+        res.json(registration);
+    } catch (error) {
+        res.status(500).json({ error: 'Error saving feedback' });
+    }
 });
 
 // 404 handler

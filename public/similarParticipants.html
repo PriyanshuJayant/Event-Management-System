@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Similar Participants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://ai-public.creatie.ai/gen_page/tailwind-custom.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com/3.4.5?plugins=forms@0.5.7,typography@0.5.13,aspect-ratio@0.4.2,container-queries@0.1.1"></script>
+    <script src="https://ai-public.creatie.ai/gen_page/tailwind-config.min.js" data-color="#000000" data-border-radius="small"></script>
+    <style>
+        #contactModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-[&#39;Inter&#39;]">
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="NN logo.svg" alt="Logo">
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button onclick="window.location.href='/Participant.html'" class="!rounded-button bg-custom text-white px-4 py-2 text-sm font-medium hover:bg-custom/90">Back to Dashboard</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white shadow rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Participants with the Same Interest </h2>
+            <div id="participantsList" class="space-y-4">
+                <!-- Participants will be loaded here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Contact Details Modal -->
+    <div id="contactModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 overflow-y-auto h-full w-full z-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-lg bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-lg font-bold">Contact Details</h3>
+                <button onclick="closeContactModal()" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mt-4">
+                <p><strong>Email:</strong> <span id="contactEmail"></span></p>
+                <p class="mt-2"><strong>Phone:</strong> <span id="contactPhone"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Function to open the contact modal
+    function openContactModal(email, phone) {
+        document.getElementById('contactEmail').textContent = email;
+        document.getElementById('contactPhone').textContent = phone;
+        document.getElementById('contactModal').style.display = 'block';
+    }
+
+    // Function to close the contact modal
+    function closeContactModal() {
+        document.getElementById('contactModal').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('eventId');
+        const college = urlParams.get('college');
+
+        if (!eventId || !college) {
+            window.location.href = '/Participant.html';
+            return;
+        }
+
+        // Fetch similar participants
+        fetch(`/api/events/${eventId}/similar-participants?college=${encodeURIComponent(college)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(participants => {
+                const container = document.getElementById('participantsList');
+                if (participants.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">No other participants from your college have registered yet.</p>';
+                    return;
+                }
+
+                container.innerHTML = participants.map(participant => `
+                    <div class="bg-gray-50 p-4 rounded-md flex justify-between items-center">
+                        <div>
+                            <h3 class="font-medium">${participant.participantName}</h3>
+                            <p class="text-sm text-gray-500">${participant.email}</p>
+                        </div>
+                        <button onclick="openContactModal('${participant.email}', '${participant.phone}')" class="!rounded-button bg-custom text-white px-4 py-2 text-sm font-medium hover:bg-custom/90">
+                            Contact
+                        </button>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('participantsList').innerHTML = '<p class="text-red-500">Error loading participants</p>';
+            });
+    });
+    </script>
+</body>
+</html> 

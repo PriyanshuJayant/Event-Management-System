@@ -16,7 +16,7 @@
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <img class="h-8 w-auto" src="https://ai-public.creatie.ai/gen_page/logo_placeholder.png" alt="Logo">
+                        <img class="h-8 w-auto" src="NN logo.svg" alt="Logo">
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                         <a href="#" class="border-custom text-custom border-b-2 inline-flex items-center px-1 pt-1 text-sm font-medium">Event Registration</a>
@@ -98,7 +98,14 @@
                 document.getElementById('eventDetails').innerHTML = '<div class="text-red-500">Error loading event details</div>';
             });
 
-        // Handle form submission
+        let registrationId = null; // Store the registration ID after successful registration
+
+        // Function to show the success modal
+        function showSuccessModal() {
+            document.getElementById("successModal").style.display = "block";
+        }
+
+        // Event listener for registration form submission
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
@@ -119,18 +126,97 @@
                 });
 
                 if (response.ok) {
-                    alert('Registration successful!');
-                    window.location.href = '/Participant.html';
+                    const data = await response.json();
+                    registrationId = data._id; // Store the registration ID
+                    showSuccessModal();
                 } else {
                     const error = await response.text();
-                    alert(`Registration failed: ${error}`);
+                    console.error('Registration failed:', error);
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'text-red-500 mt-4';
+                    errorMessage.textContent = 'Registration failed. Please try again.';
+                    document.getElementById('registrationForm').appendChild(errorMessage);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'text-red-500 mt-4';
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                document.getElementById('registrationForm').appendChild(errorMessage);
             }
+        });
+
+        // Event listener for emoji clicks
+        document.querySelectorAll(".emoji").forEach(emoji => {
+            emoji.addEventListener("click", async function () {
+                const feedback = this.getAttribute("data-feedback");
+
+                // Save the feedback
+                if (registrationId) {
+                    try {
+                        const response = await fetch(`/api/registrations/${registrationId}/feedback`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ feedback })
+                        });
+
+                        if (response.ok) {
+                            console.log("Feedback saved successfully");
+                        } else {
+                            console.error("Failed to save feedback");
+                        }
+                    } catch (error) {
+                        console.error("Error saving feedback:", error);
+                    }
+                }
+
+                // Redirect to the similar participants page
+                const eventId = new URLSearchParams(window.location.search).get('eventId');
+                const college = document.getElementById('registrationForm').querySelector('input[name="college"]').value;
+                window.location.href = `/similarParticipants.html?eventId=${eventId}&college=${encodeURIComponent(college)}`;
+            });
         });
     });
     </script>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Registration Successful! 🎉</h2>
+            <p>How was your experience while registering?</p>
+            <div class="emoji-container">
+                <span class="emoji" data-feedback="happy">😊</span>
+                <span class="emoji" data-feedback="neutral">😐</span>
+                <span class="emoji" data-feedback="angry">😡</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+      .modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        z-index: 1000; /* Ensure it appears above other content */
+      }
+      .emoji {
+        font-size: 2rem;
+        margin: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        display: inline-block;
+      }
+      .emoji:hover {
+        transform: scale(1.3);
+      }
+    </style>
 </body>
 </html> 
