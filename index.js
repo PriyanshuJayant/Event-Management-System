@@ -4,7 +4,8 @@ const path = require('path');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
+const mongoUri = process.env.MONGODB_URI;
 
 // Import models
 const Organizer = require('./models/Organizer');
@@ -13,11 +14,11 @@ const Event = require('./models/Event');
 const Registration = require('./models/Registration');
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/eventManagement', {
+mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('Connected to MongoDB'))
+.then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
@@ -355,7 +356,8 @@ app.use((req, res) => {
     res.status(404).send('<h1>404 Not Found</h1>');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is Working on http://localhost:${PORT}`);
+app.listen(port, () => {
+    console.log(`Server is Working on http://localhost:${port}`);
 });
 
+require('dotenv').config();
