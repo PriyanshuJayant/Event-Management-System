@@ -196,7 +196,7 @@ app.get('/api/organizer/events/:organizerId', async (req, res) => {
 
         // Validate the organizerId
         if (!mongoose.Types.ObjectId.isValid(organizerId)) {
-            return res.status(400).send('Invalid organizer ID');
+            return res.status(400).json({ error: 'Invalid organizer ID' });
         }
 
         const events = await Event.find({ organizerId })
