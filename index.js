@@ -193,19 +193,10 @@ app.get('/api/events', async (req, res) => {
 app.get('/api/organizer/events/:organizerId', async (req, res) => {
     try {
         const { organizerId } = req.params;
-
-        // Validate the organizerId
-        if (!mongoose.Types.ObjectId.isValid(organizerId)) {
-            return res.status(400).json({ error: 'Invalid organizer ID' });
-        }
-
-        const events = await Event.find({ organizerId })
-            .populate('registeredParticipants', 'name email');
-        console.log("Fetched organizer events:", events);
-        res.json(events);
+        const events = await Event.find({ organizerId });
+        res.json(events); // Ensure this is an array
     } catch (error) {
-        console.error('Error fetching organizer events:', error);
-        res.status(500).send('Error fetching organizer events');
+        res.status(500).json({ error: 'Error fetching events' });
     }
 });
 
